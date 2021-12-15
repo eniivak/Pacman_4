@@ -26,7 +26,7 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
-import mdp, util
+import mdp, util, html
 
 from learningAgents import ValueEstimationAgent
 import collections
@@ -53,6 +53,7 @@ class ValueIterationAgent(ValueEstimationAgent):
               mdp.getReward(state, action, nextState)
               mdp.isTerminal(state)
         """
+
         self.mdp = mdp
         self.discount = discount
         self.iterations = iterations
@@ -61,8 +62,22 @@ class ValueIterationAgent(ValueEstimationAgent):
 
     def runValueIteration(self):
         # Write value iteration code here
-        "*** YOUR CODE HERE ***"
 
+        states = self.mdp.getStates()
+
+        for i in range(0, self.iterations):
+            newValues = self.values.copy()
+            for state in states:
+                if not self.mdp.isTerminal(state):
+                    actions = self.mdp.getPossibleActions(state)
+                    max = float('-inf')
+                    for action in actions:
+                        act = self.getQValue(state, action)
+                        if max <= act:
+                            max = act
+                    newValues[state] = max
+
+            self.values = newValues
 
     def getValue(self, state):
         """
@@ -75,9 +90,17 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
           Compute the Q-value of action in state from the
           value function stored in self.values.
+
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        q = 0
+        for sp, prob in self.mdp.getTransitionStatesAndProbs(state, action):
+            reward = self.mdp.getReward(state, action, sp)
+            value = self.getValue(sp)
+            q = q + prob*(reward+self.discount*value)
+
+        return q
+
 
     def computeActionFromValues(self, state):
         """
@@ -86,10 +109,19 @@ class ValueIterationAgent(ValueEstimationAgent):
 
           You may break ties any way you see fit.  Note that if
           there are no legal actions, which is the case at the
-          terminal state, you should return None.
+          terminal state, you should return None
+
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        policy = util.Counter()
+        if not self.mdp.isTerminal(state):
+            actions = self.mdp.getPossibleActions(state)
+            for action in actions:
+                qValue = self.getQValue(state, action)
+                policy[action] = qValue
+            return policy.argMax()
+
+        else:
+            return None
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
