@@ -16,7 +16,7 @@ from game import *
 from learningAgents import ReinforcementAgent
 from featureExtractors import *
 
-import random,util,math
+import random,util,math,html
 
 class QLearningAgent(ReinforcementAgent):
     """
@@ -42,7 +42,7 @@ class QLearningAgent(ReinforcementAgent):
         "You can initialize Q-values here..."
         ReinforcementAgent.__init__(self, **args)
 
-        "*** YOUR CODE HERE ***"
+        self.balioak = util.Counter()
 
     def getQValue(self, state, action):
         """
@@ -50,8 +50,12 @@ class QLearningAgent(ReinforcementAgent):
           Should return 0.0 if we have never seen a state
           or the Q node value otherwise
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        if (state, action) in self.balioak:
+            return self.balioak[state, action]
+        else:
+            return 0.0
+
 
 
     def computeValueFromQValues(self, state):
@@ -60,18 +64,36 @@ class QLearningAgent(ReinforcementAgent):
           where the max is over legal actions.  Note that if
           there are no legal actions, which is the case at the
           terminal state, you should return a value of 0.0.
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+       """
+
+        if len(self.getLegalActions(state))==0:
+            return 0.0
+        else:
+            qbalioak=[]
+            for action in self.getLegalActions(state):
+                qbalioak.append(self.getQValue(state,action))
+            return max(qbalioak)
+
+
 
     def computeActionFromQValues(self, state):
         """
           Compute the best action to take in a state.  Note that if there
           are no legal actions, which is the case at the terminal state,
           you should return None.
+
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        balioa = self.getValue(state)
+        maxActions=[]
+        if len(self.getLegalActions(state)) == 0:
+            return None
+        else:
+            for action in self.getLegalActions(state):
+                if self.getQValue(state, action) == balioa:
+                    maxActions.append(action)
+
+        return random.choice(maxActions)
+
 
     def getAction(self, state):
         """
@@ -101,8 +123,7 @@ class QLearningAgent(ReinforcementAgent):
           NOTE: You should never call this function,
           it will be called on your behalf
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        self.balioak[(state, action)]=(1 - self.alpha) * self.getQValue(state, action) + self.alpha * (reward + self.discount * self.getValue(nextState))
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
